@@ -1,0 +1,34 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 環境変数（接続情報）。見本の .env.example だけコミットする
+.env
+.env.*
+!.env.example
+
+# 自分用のファイル（システムを動かすのに必要ないもの）は GitHub に上げない
+*.md
+docs/
+
