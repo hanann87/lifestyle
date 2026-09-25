@@ -32,3 +32,6 @@ dist-ssr
 *.md
 docs/
 
+
+# Claude Code の自分用設定
+.claude/
