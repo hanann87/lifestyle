@@ -1,0 +1,101 @@
+/* 「今日の流れ」の帯の見た目（docs/mockups/Main.dc.html の「今日の流れ」） */
+
+.flow {
+  margin: 18px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 「昨夜の睡眠」の文字（幅は TodayFlow.tsx で、1日のスタートの位置までにする） */
+.lastNightCaption {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* 帯と縦線の入れ物：中の要素を、この入れ物を基準に置く */
+.barArea {
+  position: relative;
+  height: 40px;
+}
+
+/* 帯の地（記録のない部分の色）。角を丸め、はみ出した区間は切り取る */
+.bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-track);
+}
+
+/* 色の付いた区間（位置・幅・色は TodayFlow.tsx で指定する） */
+.segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+/* 昨夜の睡眠の部分：薄くする（SCREENS.md「不透明度40%」） */
+.lastNight {
+  opacity: 0.4;
+}
+
+/* 1日のスタートの縦線：帯より上下に少しはみ出す */
+.dayStartLine {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  background: var(--color-text);
+}
+
+/* 帯の下の時刻の行：中の文字を、この行を基準に置く */
+.labels {
+  position: relative;
+  height: 32px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.rangeStartLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 1日のスタートの時刻：縦線の位置を中心に置く */
+.dayStartLabel {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* 昨夜の睡眠がないとき（1日のスタートが帯の左端）：中心に置くと左にはみ出すので、左端にそろえる */
+.atLeftEdge {
+  transform: none;
+  align-items: flex-start;
+}
+
+.nowLabel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.strong {
+  color: var(--color-text);
+  font-weight: 700;
+}

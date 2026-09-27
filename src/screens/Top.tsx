@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { parseTimeRange } from '../lib/timeRange'
-import { formatDuration, formatTime } from '../lib/format'
+import { parseTimeRange, parseTimestamp } from '../lib/timeRange'
+import { formatDuration, formatLifeDayLabel, formatTime } from '../lib/format'
 import { useNow } from '../lib/useNow'
+import type { FlowLog } from '../lib/timeline'
 import CategoryAddSheet from '../components/CategoryAddSheet'
 import DayStartSheet from '../components/DayStartSheet'
+import TodayFlow from '../components/TodayFlow'
 import styles from './Top.module.css'
 
 // いま実行中の記録（カードに出すもの）
@@ -24,8 +26,12 @@ type CategoryButton = {
 }
 
 // トップ画面（SCREENS.md「トップ」、docs/mockups/Main.dc.html）
-// 今は「いま記録中のカード」と「カテゴリボタン」。ほかの部分は、実装2の続きで足していく
+// 上から「生活日のヘッダー」「いま記録中のカード」「今日の流れ」「カテゴリボタン」
 function Top() {
+  // 今の生活日の、1日のスタートの時刻。undefined：読み込み中、null：1日のスタートがまだない（記録が0件）
+  const [lifeDayStart, setLifeDayStart] = useState<Date | null | undefined>(undefined)
+  // 「今日の流れ」の帯に出す記録（前の生活日の始まりから今まで。開始の早い順）
+  const [flowLogs, setFlowLogs] = useState<FlowLog[]>([])
   // 実行中の記録。undefined：読み込み中、null：記録が1件もない、CurrentActivity：実行中の記録
   const [current, setCurrent] = useState<CurrentActivity | null | undefined>(undefined)
   // カテゴリボタンの一覧（並び順どおり）
@@ -68,6 +74,56 @@ function Top() {
       isSleep: data.buttons.is_sleep,
       start: range.start,
     })
+  }
+
+  // ---------- DB から、今の生活日（1日のスタートと、帯に出す記録）を読む ----------
+  async function loadLifeDay() {
+    // 自分の1日のスタートを、新しい順に2件読む（1件目：今の生活日の始まり、2件目：前の生活日の始まり）
+    const { data: dayStarts, error: dayStartsError } = await supabase
+      .from('day_starts')
+      .select('started_at')
+      .order('started_at', { ascending: false })
+      .limit(2)
+
+    if (dayStartsError) {
+      setErrorMessage('読み込めませんでした。電波の良い場所で再度お試しください')
+      return
+    }
+    if (dayStarts.length === 0) {
+      // 1日のスタートがまだない（記録が0件）
+      setLifeDayStart(null)
+      setFlowLogs([])
+      return
+    }
+
+    const currentDayStart = parseTimestamp(dayStarts[0].started_at)
+    // 帯には昨夜の睡眠も出すので、前の生活日の始まりから読む（前の生活日がなければ、今の生活日の始まりから）
+    const readFrom = dayStarts.length === 2 ? parseTimestamp(dayStarts[1].started_at) : currentDayStart
+
+    // その時刻より後にかかる記録を、開始の早い順に読む。overlaps：範囲 [readFrom, ) と重なる記録だけ
+    const { data: logs, error: logsError } = await supabase
+      .from('activity_logs')
+      .select('period, buttons(color, is_sleep)')
+      .overlaps('period', `[${readFrom.toISOString()},)`)
+      .order('period')
+
+    if (logsError) {
+      setErrorMessage('読み込めませんでした。電波の良い場所で再度お試しください')
+      return
+    }
+
+    setLifeDayStart(currentDayStart)
+    setFlowLogs(
+      logs.map((log) => {
+        const range = parseTimeRange(log.period as string)
+        return {
+          start: range.start,
+          end: range.end,
+          color: log.buttons.color,
+          isSleep: log.buttons.is_sleep,
+        }
+      }),
+    )
   }
 
   // ---------- DB から、カテゴリボタンの一覧を読む ----------
@@ -127,8 +183,8 @@ function Top() {
     if (error) {
       setErrorMessage('記録できませんでした。電波の良い場所で再度お試しください')
     } else {
-      // 記録できたら、実行中の記録を読み直して、カードとボタンの塗りつぶしを新しくする
-      await loadCurrentActivity()
+      // 記録できたら、実行中の記録と今の生活日を読み直して、カード・ボタンの塗りつぶし・生活日・帯を新しくする
+      await Promise.all([loadCurrentActivity(), loadLifeDay()])
     }
 
     setPressingButtonId(null)
@@ -140,17 +196,26 @@ function Top() {
     await loadButtons()
   }
 
-  // ---------- 画面に出たときに、実行中の記録とボタンの一覧を読む ----------
+  // ---------- 画面に出たときに、実行中の記録・1日のスタート・ボタンの一覧を読む ----------
   useEffect(() => {
-    // 2つの読み込みを同時に始めて、両方が終わるまで待つ
+    // 3つの読み込みを同時に始めて、全部が終わるまで待つ
     async function loadTopScreenData() {
-      await Promise.all([loadCurrentActivity(), loadButtons()])
+      await Promise.all([loadCurrentActivity(), loadLifeDay(), loadButtons()])
     }
     loadTopScreenData()
   }, [])
 
   return (
     <main className={styles.screen}>
+      {/* ---------- 生活日のヘッダー ---------- */}
+      <header className={styles.header}>
+        <div className={styles.lifeDayCaption}>生活日</div>
+        {/* 1日のスタートの日付が、生活日の名前。まだ1日のスタートがなければ今日の日付（読み込み中は出さない） */}
+        {lifeDayStart !== undefined && (
+          <h1 className={styles.lifeDayLabel}>{formatLifeDayLabel(lifeDayStart ?? new Date())}</h1>
+        )}
+      </header>
+
       {/* ---------- いま記録中のカード ---------- */}
       <section className={styles.card} aria-label="いま記録中">
         {errorMessage !== '' && (
@@ -180,6 +245,9 @@ function Top() {
           </>
         )}
       </section>
+
+      {/* ---------- 今日の流れ（1日のスタートがあるときだけ出す） ---------- */}
+      {lifeDayStart && <TodayFlow logs={flowLogs} dayStart={lifeDayStart} />}
 
       {/* ---------- カテゴリボタン（2列。このエリアだけ縦にスクロールする） ---------- */}
       <div className={styles.buttonGrid}>

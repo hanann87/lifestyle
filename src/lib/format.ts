@@ -10,6 +10,20 @@ export function formatTime(date: Date): string {
   })
 }
 
+// Date を、日本時間の「月日（曜日）」（例：9月25日（金））の文字にする。生活日の名前に使う（DESIGN.md 5章）
+export function formatLifeDayLabel(date: Date): string {
+  // 月・日・曜日を別々に取り出す（そのまま文字にすると、カッコが半角の「9月25日(金)」になるため）
+  const parts = new Intl.DateTimeFormat('ja-JP', {
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+    timeZone: 'Asia/Tokyo',
+  }).formatToParts(date)
+  // 取り出した中から、指定した種類（month・day・weekday）の値を探す
+  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
+  return `${pick('month')}月${pick('day')}日（${pick('weekday')}）`
+}
+
 // ミリ秒の長さを「時:分:秒」（例：02:24:13）の文字にする。24時間を超えても、時をそのまま数える（例：26:00:00）
 export function formatDuration(milliseconds: number): string {
   // 端末の時計が DB の時計より少し遅れていると、マイナスになることがあるので、0 より小さければ 0 にする

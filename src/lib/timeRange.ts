@@ -20,11 +20,13 @@ export function parseTimeRange(text: string): TimeRange {
   }
 }
 
-// "2026-09-27 08:13:32.379241+00"（前後の「"」はあってもよい）を Date にする
-function parseTimestamp(text: string): Date {
+// DB の時刻の文字列を Date にする。次のどちらの形も読める（前後の「"」はあってもよい）
+//   範囲の中の時刻：        2026-09-27 08:13:32.379241+00
+//   timestamptz の列の値：  2026-09-27T08:13:32.379241+00:00（day_starts.started_at など）
+export function parseTimestamp(text: string): Date {
   const match = text
     .replaceAll('"', '')
-    .match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})(\.\d+)?([+-]\d{2})(?::?(\d{2}))?$/)
+    .match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(\.\d+)?([+-]\d{2})(?::?(\d{2}))?$/)
   if (!match) {
     throw new Error(`時刻の形が想定と違います：${text}`)
   }
