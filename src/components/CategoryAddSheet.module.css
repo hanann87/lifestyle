@@ -1,0 +1,168 @@
+/* カテゴリを追加するボトムシートの見た目（docs/mockups/CategoryAdd.dc.html） */
+
+/* 暗幕：画面全体を覆い、シートを一番下に置く */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--color-scrim);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* シート：上の角だけ丸くする。PC では幅390pxで中央に置く */
+.sheet {
+  width: 100%;
+  max-width: 390px;
+  margin: 0 auto;
+  padding: 28px 24px 32px;
+  background: var(--color-surface);
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+/* 見出しと中身のまとまり（カテゴリ名、表示例）：縦に並べる */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.input {
+  height: 52px;
+  padding: 0 16px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 14px;
+  background: var(--color-surface);
+  font-size: 17px;
+  outline: none;
+}
+
+/* 入力中（カーソルがあるとき）は、枠をアクセントの色にする */
+.input:focus {
+  border-color: var(--color-accent);
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-danger);
+}
+
+/* 色のまとまり：fieldset の標準の枠と余白を消す */
+.colorSet {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 12色を 6列 × 2段に並べる */
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  justify-items: center;
+}
+
+/* 色の丸いボタン（色は CategoryAddSheet.tsx で指定する） */
+.colorButton {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 選んでいる色：白い輪と黒い輪の、二重の輪で囲む */
+.colorSelected {
+  box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-text);
+}
+
+.note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 表示例：トップ画面のカテゴリボタンと同じ見た目（幅は半分） */
+.preview {
+  width: 50%;
+  height: 58px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.previewChip {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* キャンセル・追加する：2つを同じ幅で横に並べる */
+.actions {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cancelButton {
+  height: 56px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 16px;
+  background: var(--color-surface);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submitButton {
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 通信中（押せないとき）は、薄くして押せないことが分かるようにする */
+.cancelButton:disabled,
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

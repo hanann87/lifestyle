@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { parseTimeRange } from '../lib/timeRange'
 import { formatDuration, formatTime } from '../lib/format'
+import CategoryAddSheet from '../components/CategoryAddSheet'
 import styles from './Top.module.css'
 
 // いま実行中の記録（カードに出すもの）
@@ -30,6 +31,8 @@ function Top() {
   const [errorMessage, setErrorMessage] = useState('')
   // 記録している途中のボタンの ID。null なら、記録中の通信はない
   const [pressingButtonId, setPressingButtonId] = useState<number | null>(null)
+  // カテゴリを追加するボトムシートを開いているか
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false)
 
   // ---------- DB から、実行中の記録を読む ----------
   async function loadCurrentActivity() {
@@ -100,6 +103,12 @@ function Top() {
     setPressingButtonId(null)
   }
 
+  // ---------- カテゴリを追加できたとき：シートを閉じて、ボタンの一覧を読み直す ----------
+  async function handleCategoryAdded() {
+    setIsAddSheetOpen(false)
+    await loadButtons()
+  }
+
   // ---------- 画面に出たときに、実行中の記録とボタンの一覧を読む ----------
   useEffect(() => {
     // 2つの読み込みを同時に始めて、両方が終わるまで待つ
@@ -154,8 +163,8 @@ function Top() {
           />
         ))}
 
-        {/* カテゴリを追加する画面は、実装2の「カテゴリの追加」で作る。今は押しても何もしない */}
-        <button type="button" className={styles.addButton}>
+        {/* 「＋ 追加」：カテゴリを追加するボトムシートを開く */}
+        <button type="button" className={styles.addButton} onClick={() => setIsAddSheetOpen(true)}>
           <svg
             width="18"
             height="18"
@@ -173,6 +182,15 @@ function Top() {
           追加
         </button>
       </div>
+
+      {/* ---------- カテゴリを追加するボトムシート（開いているときだけ出す） ---------- */}
+      {isAddSheetOpen && (
+        <CategoryAddSheet
+          usedColors={buttons.map((button) => button.color)}
+          onClose={() => setIsAddSheetOpen(false)}
+          onAdded={handleCategoryAdded}
+        />
+      )}
     </main>
   )
 }
