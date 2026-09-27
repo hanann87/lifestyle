@@ -140,6 +140,9 @@ isOneToOne: false
             "add_button":
 { Args: { "p_color": string,"p_name": string }; Returns: undefined
                            },
+"overwrite_activity":
+{ Args: { "p_button_id": number,"p_end"?: string,"p_start": string }; Returns: undefined
+                           },
 "switch_activity":
 { Args: { "p_button_id": number,"p_start_day"?: boolean }; Returns: undefined
                            }
