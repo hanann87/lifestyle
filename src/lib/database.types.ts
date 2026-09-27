@@ -137,7 +137,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "switch_activity":
+            "add_button":
+{ Args: { "p_color": string,"p_name": string }; Returns: undefined
+                           },
+"switch_activity":
 { Args: { "p_button_id": number,"p_start_day"?: boolean }; Returns: undefined
                            }
           }

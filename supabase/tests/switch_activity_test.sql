@@ -1,6 +1,7 @@
 -- switch_activity（行動を切り替える DB 関数）のテスト。
 -- 設計は DESIGN.md 1章「記録の基本ルール」「使い始めの状態」、10章「行動の切り替え（手動）」
 -- 実行：npx supabase test db（手元の DB で動く。最後に rollback するので、データは残らない）
+-- 手元の DB には試し用ユーザーの記録などもあるので、確かめるときは必ずテスト用ユーザー（1111…）の行だけに絞る
 
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -40,16 +41,16 @@ select lives_ok(
 reset role;
 
 select is(
-  (select count(*) from public.activity_logs)::int, 1,
+  (select count(*) from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111')::int, 1,
   '1. 記録が1件できる'
 );
 select is(
-  (select button_id from public.activity_logs where upper_inf(period)),
+  (select button_id from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111' and upper_inf(period)),
   (select id from test_buttons where name = '睡眠'),
   '1. 押したボタンの記録が実行中になる'
 );
 select is(
-  (select started_at from public.day_starts), now(),
+  (select started_at from public.day_starts where user_id = '11111111-1111-1111-1111-111111111111'), now(),
   '1. 最初の記録の開始時刻が、1日のスタートになる'
 );
 
@@ -57,8 +58,8 @@ select is(
 
 -- 状況を作り直す：8時間前から睡眠が実行中、1日のスタートは24時間前
 -- （テスト全体が1つのトランザクションで now() が変わらないので、過去の時刻で用意する）
-delete from public.activity_logs;
-delete from public.day_starts;
+delete from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111';
+delete from public.day_starts where user_id = '11111111-1111-1111-1111-111111111111';
 insert into public.activity_logs (user_id, button_id, period) values
   ('11111111-1111-1111-1111-111111111111', (select id from test_buttons where name = '睡眠'),
    tstzrange(now() - interval '8 hours', null, '[)'));
@@ -74,30 +75,30 @@ reset role;
 
 select is(
   (select upper(period) from public.activity_logs
-    where button_id = (select id from test_buttons where name = '睡眠')),
+    where user_id = '11111111-1111-1111-1111-111111111111' and button_id = (select id from test_buttons where name = '睡眠')),
   now(),
   '2. 実行中だった記録が、今の時刻で終わる'
 );
 select is(
-  (select button_id from public.activity_logs where upper_inf(period)),
+  (select button_id from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111' and upper_inf(period)),
   (select id from test_buttons where name = '研究'),
   '2. 押したボタンの記録が実行中になる'
 );
 select is(
-  (select lower(period) from public.activity_logs where upper_inf(period)),
+  (select lower(period) from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111' and upper_inf(period)),
   now(),
   '2. 新しい記録は、今の時刻から始まる（前の記録との間に隙間がない）'
 );
 select is(
-  (select count(*) from public.day_starts)::int, 1,
+  (select count(*) from public.day_starts where user_id = '11111111-1111-1111-1111-111111111111')::int, 1,
   '2. 1日のスタートは増えない'
 );
 
 -- ========== 3. 1日をスタートする（true）で押す ==========
 
 -- 状況を作り直す（2 と同じ）
-delete from public.activity_logs;
-delete from public.day_starts;
+delete from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111';
+delete from public.day_starts where user_id = '11111111-1111-1111-1111-111111111111';
 insert into public.activity_logs (user_id, button_id, period) values
   ('11111111-1111-1111-1111-111111111111', (select id from test_buttons where name = '睡眠'),
    tstzrange(now() - interval '8 hours', null, '[)'));
@@ -112,7 +113,7 @@ select lives_ok(
 reset role;
 
 select is(
-  (select max(started_at) from public.day_starts), now(),
+  (select max(started_at) from public.day_starts where user_id = '11111111-1111-1111-1111-111111111111'), now(),
   '3. 今の時刻が、1日のスタートとして記録される'
 );
 
@@ -127,7 +128,7 @@ select lives_ok(
 reset role;
 
 select is(
-  (select count(*) from public.activity_logs)::int, 2,
+  (select count(*) from public.activity_logs where user_id = '11111111-1111-1111-1111-111111111111')::int, 2,
   '4. 記録は増えない（睡眠と食事の2件のまま）'
 );
 
