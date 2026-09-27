@@ -1,0 +1,64 @@
+# main に push されたら、アプリをビルドして GitHub Pages に公開する
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # GitHub の画面（Actions タブ）から手で実行することもできるようにする
+  workflow_dispatch:
+
+# このワークフローに許す権限（必要なものだけ）
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開が同時に2つ動かないようにする（動いている公開は途中で止めず、次の公開はそれが終わるまで待つ）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # 1つ目の仕事：ビルドして、公開するファイル（dist/）を GitHub に預ける
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードを取り出す
+        uses: actions/checkout@v7
+
+      - name: Node.js を用意する
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: ライブラリを入れる
+        run: npm ci
+
+      - name: ビルドする
+        run: npm run build
+        # .env.local の代わりに、リポジトリの Secrets に登録した値を渡す
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_LOGIN_EMAIL: ${{ secrets.VITE_LOGIN_EMAIL }}
+
+      - name: Pages の設定を読み込む
+        uses: actions/configure-pages@v6
+
+      - name: 公開するファイル（dist/）を預ける
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  # 2つ目の仕事：預けたファイルを GitHub Pages に公開する
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages に公開する
+        id: deployment
+        uses: actions/deploy-pages@v5
