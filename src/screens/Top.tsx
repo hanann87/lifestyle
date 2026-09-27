@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { parseTimeRange } from '../lib/timeRange'
 import { formatDuration, formatTime } from '../lib/format'
+import { useNow } from '../lib/useNow'
 import CategoryAddSheet from '../components/CategoryAddSheet'
+import DayStartSheet from '../components/DayStartSheet'
 import styles from './Top.module.css'
 
 // いま実行中の記録（カードに出すもの）
@@ -10,6 +12,7 @@ type CurrentActivity = {
   buttonId: number // どのボタンの記録か（実行中のボタンを塗りつぶすのに使う）
   name: string // カテゴリの名前
   color: string // カテゴリの色
+  isSleep: boolean // 睡眠ボタンの記録か（睡眠中に別のボタンを押したら、1日のスタート確認を出す）
   start: Date // 開始時刻
 }
 
@@ -33,14 +36,16 @@ function Top() {
   const [pressingButtonId, setPressingButtonId] = useState<number | null>(null)
   // カテゴリを追加するボトムシートを開いているか
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false)
+  // 1日のスタート確認で、答えを待っているボタン。null なら確認を出していない
+  const [dayStartTarget, setDayStartTarget] = useState<CategoryButton | null>(null)
 
   // ---------- DB から、実行中の記録を読む ----------
   async function loadCurrentActivity() {
     // 自分の記録を、開始時刻の新しい順に並べて1件だけ読む（実行中の記録は、いつも一番新しい記録）
-    // buttons(name, color)：記録のボタンの名前と色も、一緒に読む
+    // buttons(name, color, is_sleep)：記録のボタンの名前・色・睡眠ボタンかも、一緒に読む
     const { data, error } = await supabase
       .from('activity_logs')
-      .select('period, button_id, buttons(name, color)')
+      .select('period, button_id, buttons(name, color, is_sleep)')
       .order('period', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -60,6 +65,7 @@ function Top() {
       buttonId: data.button_id,
       name: data.buttons.name,
       color: data.buttons.color,
+      isSleep: data.buttons.is_sleep,
       start: range.start,
     })
   }
@@ -80,18 +86,43 @@ function Top() {
     setButtons(data)
   }
 
-  // ---------- カテゴリボタンを押したとき：DB に記録して、カードを新しくする ----------
-  async function handleButtonPress(buttonId: number) {
+  // ---------- カテゴリボタンを押したとき：睡眠中なら1日のスタート確認を出し、そうでなければすぐ記録する ----------
+  async function handleButtonPress(button: CategoryButton) {
     // 前に押したボタンの記録が終わるまでは、次を受け付けない（二重に記録しないため）
     if (pressingButtonId !== null) {
       return
     }
 
+    // 睡眠の記録中に、別のボタンを押したら、すぐには記録せず確認を出す（DESIGN.md 5章「1日のスタートの決め方」）
+    if (current?.isSleep && current.buttonId !== button.id) {
+      setDayStartTarget(button)
+      return
+    }
+
+    await recordActivity(button.id, false)
+  }
+
+  // ---------- 1日のスタート確認に答えたとき：確認を閉じて、答えに合わせて記録する ----------
+  async function handleDayStartAnswer(startDay: boolean) {
+    if (dayStartTarget === null) {
+      return
+    }
+    const buttonId = dayStartTarget.id
+    setDayStartTarget(null)
+    await recordActivity(buttonId, startDay)
+  }
+
+  // ---------- DB に記録して、カードを新しくする ----------
+  // startDay：1日をスタートするか（1日のスタート確認で「はい」を選んだときだけ true）
+  async function recordActivity(buttonId: number, startDay: boolean) {
     setPressingButtonId(buttonId)
     setErrorMessage('')
 
     // 行動を切り替える DB 関数を呼ぶ（実行中と同じボタンなら、DB 関数が何もしない）
-    const { error } = await supabase.rpc('switch_activity', { p_button_id: buttonId })
+    const { error } = await supabase.rpc('switch_activity', {
+      p_button_id: buttonId,
+      p_start_day: startDay,
+    })
 
     if (error) {
       setErrorMessage('記録できませんでした。電波の良い場所で再度お試しください')
@@ -159,7 +190,7 @@ function Top() {
             isRunning={current?.buttonId === button.id}
             isPressing={pressingButtonId === button.id}
             disabled={pressingButtonId !== null}
-            onPress={() => handleButtonPress(button.id)}
+            onPress={() => handleButtonPress(button)}
           />
         ))}
 
@@ -189,6 +220,17 @@ function Top() {
           usedColors={buttons.map((button) => button.color)}
           onClose={() => setIsAddSheetOpen(false)}
           onAdded={handleCategoryAdded}
+        />
+      )}
+
+      {/* ---------- 1日のスタート確認のボトムシート（睡眠中に別のボタンを押したときだけ出す） ---------- */}
+      {dayStartTarget && current && (
+        <DayStartSheet
+          sleepName={current.name}
+          sleepColor={current.color}
+          sleepStart={current.start}
+          nextName={dayStartTarget.name}
+          onAnswer={handleDayStartAnswer}
         />
       )}
     </main>
@@ -240,15 +282,8 @@ function CategoryButtonView({
 // 経過時間のタイマー（SCREENS.md「トップ」の2：時:分:秒）
 // 1秒ごとに「今 − 開始時刻」を計算し直す。1秒ずつ足していくのではないので、アプリを閉じていても正しく進む（DESIGN.md 3章）
 function Timer({ start }: { start: Date }) {
-  // 今の時刻。1秒ごとに新しくする
-  const [now, setNow] = useState(new Date())
-
-  useEffect(() => {
-    // 1秒（1000ミリ秒）ごとに、今の時刻を新しくする
-    const intervalId = setInterval(() => setNow(new Date()), 1000)
-    // Timer が画面から消えるときに、くり返しを止める
-    return () => clearInterval(intervalId)
-  }, [])
+  // 今の時刻（1秒ごとに新しくなる）
+  const now = useNow()
 
   return <div className={styles.timer}>{formatDuration(now.getTime() - start.getTime())}</div>
 }
