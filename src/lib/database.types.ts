@@ -137,7 +137,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "switch_activity":
+{ Args: { "p_button_id": number,"p_start_day"?: boolean }; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never
