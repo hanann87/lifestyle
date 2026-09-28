@@ -140,6 +140,15 @@ isOneToOne: false
             "add_button":
 { Args: { "p_color": string,"p_name": string }; Returns: undefined
                            },
+"add_day_start":
+{ Args: { "p_log_id": number }; Returns: undefined
+                           },
+"delete_day_start":
+{ Args: { "p_day_start_id": number }; Returns: undefined
+                           },
+"move_day_start":
+{ Args: { "p_day_start_id": number,"p_log_id": number }; Returns: undefined
+                           },
 "overwrite_activity":
 { Args: { "p_button_id": number,"p_end"?: string,"p_start": string }; Returns: undefined
                            },
