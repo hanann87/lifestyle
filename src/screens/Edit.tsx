@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { parseTimeRange } from '../lib/timeRange'
 import { fromDateTimeInputValue, toDateTimeInputValue } from '../lib/dateTimeInput'
-import { formatTimeWithDate } from '../lib/format'
+import { formatTimeSpan, formatTimeWithDate } from '../lib/format'
 import { buildOverwritePreview, snapToLogBoundary } from '../lib/overwritePreview'
 import type { PreviewLog, TimeSpan } from '../lib/overwritePreview'
 import CategoryButton from '../components/CategoryButton'
+import EditHeader from '../components/EditHeader'
+import type { EditTab } from '../components/EditHeader'
 import styles from './Edit.module.css'
 
 // カテゴリ1つ分（選ぶボタンに出すもの）
@@ -30,7 +32,8 @@ const ONE_MINUTE = 60 * 1000
 // 修正画面（記録の上書き）（SCREENS.md「修正（記録の上書き）」、docs/mockups/Edit.dc.html）
 // カテゴリ・開始・終了を選び、置き換わる記録を確かめて、「この時間帯を上書きする」で DB 関数 overwrite_activity を呼ぶ
 // onBack：トップ画面に戻る関数（App がトップ画面に切り替える）。左上の「戻る」と、上書きできたときに呼ぶ
-function Edit({ onBack }: { onBack: () => void }) {
+// onSelectTab：上の切り替えを押したときに呼ぶ関数（App が「1日のスタート」の画面に切り替える）
+function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: EditTab) => void }) {
   // 選べるカテゴリの一覧（並び順どおり）
   const [categories, setCategories] = useState<Category[]>([])
   // 選んでいるカテゴリの ID。null ならまだ選んでいない（開いたときは何も選ばない）
@@ -219,25 +222,8 @@ function Edit({ onBack }: { onBack: () => void }) {
 
   return (
     <main className={styles.screen}>
-      {/* ---------- ヘッダー：戻るボタンと見出し ---------- */}
-      <header className={styles.header}>
-        <button type="button" className={styles.backButton} aria-label="戻る" onClick={onBack}>
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-        <h1 className={styles.title}>修正</h1>
-      </header>
+      {/* ---------- 戻る・見出し・「記録の上書き／1日のスタート」の切り替え ---------- */}
+      <EditHeader activeTab="editOverwrite" onBack={onBack} onSelectTab={onSelectTab} />
 
       {/* ---------- 入力する部分（はみ出す分は、ここだけ縦にスクロールする） ---------- */}
       <div className={styles.body}>
@@ -317,7 +303,7 @@ function Edit({ onBack }: { onBack: () => void }) {
               <div key={span.start.getTime()} className={styles.noticeRow}>
                 <span className={styles.noticeChip} style={{ background: span.color }} />
                 {span.name}
-                <span className={styles.noticeTime}>{formatSpan(span, now)}</span>
+                <span className={styles.noticeTime}>{formatTimeSpan(span.start, span.end, now)}</span>
               </div>
             ))}
 
@@ -364,19 +350,14 @@ function toSelectedRange(startValue: string, endKind: EndKind, endValue: string)
   return { start, end }
 }
 
-// 予告の1行分の時刻（例：10:40–12:10、9/27 23:10–07:00）。終了がなければ「今」まで
-function formatSpan(span: TimeSpan, now: Date): string {
-  return `${formatTimeWithDate(span.start, now)}–${span.end ? formatTimeWithDate(span.end, now) : '今'}`
-}
-
 // 同じカテゴリとつながるときの説明（例：（直前の研究 08:10–10:40 とつながり、1つの記録になります））。つながらなければ空
 function mergeNote(before: TimeSpan | null, after: TimeSpan | null, now: Date): string {
   const parts: string[] = []
   if (before) {
-    parts.push(`直前の${before.name} ${formatSpan(before, now)}`)
+    parts.push(`直前の${before.name} ${formatTimeSpan(before.start, before.end, now)}`)
   }
   if (after) {
-    parts.push(`直後の${after.name} ${formatSpan(after, now)}`)
+    parts.push(`直後の${after.name} ${formatTimeSpan(after.start, after.end, now)}`)
   }
   if (parts.length === 0) {
     return ''

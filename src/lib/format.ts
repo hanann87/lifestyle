@@ -36,6 +36,11 @@ export function formatTimeWithDate(date: Date, now: Date): string {
   return `${toMonthDay(date)} ${formatTime(date)}`
 }
 
+// 開始〜終了を「10:40–12:10」（今日以外は「9/27 23:10–07:00」）の文字にする。終了がなければ（実行中）「今」まで
+export function formatTimeSpan(start: Date, end: Date | null, now: Date): string {
+  return `${formatTimeWithDate(start, now)}–${end ? formatTimeWithDate(end, now) : '今'}`
+}
+
 // ミリ秒の長さを「時:分:秒」（例：02:24:13）の文字にする。24時間を超えても、時をそのまま数える（例：26:00:00）
 export function formatDuration(milliseconds: number): string {
   // 端末の時計が DB の時計より少し遅れていると、マイナスになることがあるので、0 より小さければ 0 にする

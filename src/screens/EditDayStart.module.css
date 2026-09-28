@@ -1,0 +1,205 @@
+/* 修正画面（1日のスタート）の見た目（docs/mockups/EditDayStart.dc.html） */
+
+/* 画面全体：中身を縦に並べる。PC では幅390pxで中央に表示する（トップ画面と同じ） */
+.screen {
+  height: 100svh;
+  max-width: 390px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 画面の説明の文 */
+.description {
+  margin: 14px 20px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-sub);
+}
+
+/* 失敗したときのメッセージ（赤い文字） */
+.error {
+  margin: 8px 20px 0;
+  font-size: 14px;
+  color: var(--color-danger);
+}
+
+/* 並び：残りの高さを全部使い、はみ出す分はここだけ縦にスクロールする */
+.list {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 記録1件：白いカードに、色チップ・名前・時刻 */
+.record {
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recordChip {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.recordName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 時刻は右端に寄せる */
+.recordTime {
+  margin-left: auto;
+  font-family: var(--font-number);
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+/* 境目：時刻と点線を横に並べる */
+.boundary {
+  height: 44px;
+  padding-left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boundaryTime {
+  min-width: 40px;
+  font-family: var(--font-number);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 点線：残りの幅を全部使う。高さ0の線の上の枠だけを点線にする */
+.boundaryLine {
+  flex-grow: 1;
+  height: 0;
+  border-top: 1px dashed #c9c3b8; /* モックアップの点線の色（ここでしか使わない） */
+}
+
+/* 1日のスタート：アクセント色の枠と、薄い青の地 */
+.dayStart {
+  margin: 6px 0;
+  padding: 12px 14px;
+  border: 2px solid var(--color-accent);
+  border-radius: 12px;
+  background: #e6ecf7; /* モックアップの薄い青（ここでしか使わない） */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 「1日のスタート（…）」と時刻を縦に並べる */
+.dayStartText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dayStartCaption {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.dayStartTime {
+  font-family: var(--font-number);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 境目の「ここをスタートに」：丸みのある小さいボタン（アクセント色の文字） */
+.addButton {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* 境目の「ここへ移動」：移動先を選んでいるときだけ出る。目立つようにアクセント色で塗る */
+.moveHereButton {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-accent);
+  border-radius: 16px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* 青い枠のボタンの入れ物：右端に寄せて、ボタンを横に並べる */
+.dayStartActions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* 青い枠の「移動」「やめる」：アクセント色の枠と文字 */
+.moveButton {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-accent);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 青い枠の「削除」：削除なので赤 */
+.deleteButton {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-danger);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-danger);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 通信中：少し薄くして、押せないことを見せる */
+.addButton:disabled,
+.moveHereButton:disabled,
+.moveButton:disabled,
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* 一番早い1日のスタートの説明（右端に寄せる） */
+.firstNote {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

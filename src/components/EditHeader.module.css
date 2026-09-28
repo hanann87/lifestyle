@@ -1,0 +1,60 @@
+/* 修正画面の上の部分の見た目（docs/mockups/Edit.dc.html・EditDayStart.dc.html） */
+
+/* 戻るボタンと見出しを横に並べる */
+.header {
+  padding: 12px 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 戻るボタン：矢印のアイコンだけ。押しやすいよう 44px 四方にする */
+.backButton {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 切り替え：地の色の中に、2つのボタンを同じ幅で並べる */
+.tabs {
+  margin: 8px 20px 0;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--color-track);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+/* 切り替えのボタン（選んでいない側：地の色のまま、やや薄い文字） */
+.tab {
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-sub);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 選んでいる側：白地・太字 */
+.activeTab {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+}

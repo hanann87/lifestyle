@@ -4,9 +4,10 @@ import { supabase } from './lib/supabase'
 import Login from './screens/Login'
 import Top from './screens/Top'
 import Edit from './screens/Edit'
+import EditDayStart from './screens/EditDayStart'
 
-// ログインしたあとに出せる画面の名前
-type Screen = 'top' | 'edit'
+// ログインしたあとに出せる画面の名前（editOverwrite：修正（記録の上書き）、editDayStart：修正（1日のスタート））
+type Screen = 'top' | 'editOverwrite' | 'editDayStart'
 
 // アプリの画面の一番外側。ログインしているかどうかと、今の画面の名前で、表示する画面を切り替える
 function App() {
@@ -33,10 +34,14 @@ function App() {
   }
 
   // ---------- ログインしているとき：今の画面の名前で出し分ける ----------
-  if (screen === 'edit') {
-    return <Edit onBack={() => setScreen('top')} />
+  // 修正画面の上の切り替え（onSelectTab）は、押した側の画面の名前を渡すので、そのまま setScreen に入れる
+  if (screen === 'editOverwrite') {
+    return <Edit onBack={() => setScreen('top')} onSelectTab={setScreen} />
   }
-  return <Top onOpenEdit={() => setScreen('edit')} />
+  if (screen === 'editDayStart') {
+    return <EditDayStart onBack={() => setScreen('top')} onSelectTab={setScreen} />
+  }
+  return <Top onOpenEdit={() => setScreen('editOverwrite')} />
 }
 
 export default App
