@@ -1,0 +1,57 @@
+/* カテゴリボタンの見た目（docs/mockups/Main.dc.html のカテゴリボタン） */
+
+/* ボタン：色チップと名前を横に並べる
+   container-type: inline-size で、中の要素から「このボタンの中身の横幅」を 100cqi として使えるようにする */
+.button {
+  container-type: inline-size;
+  height: 58px;
+  min-width: 0;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 塗りつぶすとき：背景と枠の色は CategoryButton.tsx でカテゴリの色にする。文字は白 */
+.active {
+  color: var(--color-surface);
+}
+
+/* 押せないボタンは、指の形のカーソルにしない */
+.button:disabled {
+  cursor: default;
+}
+
+/* 記録している途中のボタン：薄くして、押したことが伝わるようにする */
+.dimmed {
+  opacity: 0.5;
+}
+
+/* 色チップ（色は CategoryButton.tsx で指定する）。名前が長くても縮めない */
+.chip {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* 名前：ふだんは 16px。入りきらないときだけ小さくする
+   名前を置ける幅 ＝ ボタンの中身の横幅（100cqi）− 色チップ（14px）− すき間（10px）
+   日本語は1文字の幅がほぼ文字の大きさと同じなので、「置ける幅 ÷ 文字数」が、入りきる一番大きい文字の大きさ
+   min(16px, …) で、16px より大きくはしない。万一それでも入らないときは「…」で省略する */
+.name {
+  min-width: 0;
+  font-size: min(16px, calc((100cqi - 24px) / var(--name-length)));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

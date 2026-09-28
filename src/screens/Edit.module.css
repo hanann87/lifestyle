@@ -1,0 +1,213 @@
+/* 修正画面（記録の上書き）の見た目（docs/mockups/Edit.dc.html） */
+
+/* 画面全体：中身を縦に並べる。PC では幅390pxで中央に表示する（トップ画面と同じ） */
+.screen {
+  height: 100svh;
+  max-width: 390px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー：戻るボタンと見出しを横に並べる */
+.header {
+  padding: 12px 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 戻るボタン：矢印のアイコンだけ。押しやすいよう 44px 四方にする */
+.backButton {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 入力する部分：残りの高さを全部使い、はみ出す分はここだけ縦にスクロールする。項目どうしは 20px あける */
+.body {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 失敗したときのメッセージ（赤い文字） */
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-danger);
+}
+
+/* 項目1つ分（見出しと、選ぶ部分を縦に並べる） */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* カテゴリを選ぶボタンを、トップと同じく同じ幅の2列に並べる（ボタンの見た目は CategoryButton.module.css） */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 日時の入力欄（開始・終了）。見た目はモックアップの「開始」のボタンに合わせる
+   文字は 16px 以上にする（iPhone は 16px より小さい入力欄を押すと、画面が拡大されるため） */
+.dateTimeInput {
+  box-sizing: border-box;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-number);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* 終了の選び方：fieldset の初期設定の枠と余白を消し、選択肢を縦に並べる */
+.endFieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* legend は fieldset の中で並べ方が特別なので、見出しとの間は margin であける */
+.endFieldset legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+/* 終了の選択肢1つ分（ラジオボタンと文字）。行全体を押せる */
+.endOption {
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  background: var(--color-surface);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+/* 選んでいる選択肢：枠をアクセント色の 2px に見せる（内側に 1px の影を足す。枠の太さを変えると、中身がずれるため） */
+.endOptionSelected {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* ラジオボタン：20px にして、色をアクセント色にする */
+.radio {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+/* 置き換わる記録の予告：注意書きの色の枠（docs/mockups/Edit.dc.html） */
+.notice {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--color-notice-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noticeTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-notice-text);
+}
+
+/* 置き換わる記録1件：色チップ・名前・時刻（時刻は右端に寄せる） */
+.noticeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.noticeChip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* margin-left: auto で、残りの幅を全部左側の余白にして、右端に寄せる */
+.noticeTime {
+  margin-left: auto;
+  font-family: var(--font-number);
+  font-size: 13px;
+}
+
+/* 上書きしたあとの記録（→ 研究 10:40–12:10…） */
+.noticeResult {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+/* 画面の下の部分：入力する部分（.body）の下に置く。.body だけがスクロールするので、ここはいつも見えている */
+.footer {
+  padding: 12px 20px 24px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 「この時間帯を上書きする」：横幅いっぱいの、アクセント色のボタン */
+.submitButton {
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-radius: 16px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 通信中：少し薄くして、押せないことを見せる */
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

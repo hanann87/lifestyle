@@ -5,6 +5,7 @@ import { formatDuration, formatLifeDayLabel, formatTime } from '../lib/format'
 import { useNow } from '../lib/useNow'
 import type { FlowLog } from '../lib/timeline'
 import CategoryAddSheet from '../components/CategoryAddSheet'
+import CategoryButton from '../components/CategoryButton'
 import DayStartSheet from '../components/DayStartSheet'
 import TodayFlow from '../components/TodayFlow'
 import styles from './Top.module.css'
@@ -27,7 +28,8 @@ type CategoryButton = {
 
 // トップ画面（SCREENS.md「トップ」、docs/mockups/Main.dc.html）
 // 上から「生活日のヘッダー」「いま記録中のカード」「今日の流れ」「カテゴリボタン」
-function Top() {
+// onOpenEdit：「今日の流れ」の「修正」を押したときに呼ぶ関数（App が修正画面に切り替える）
+function Top({ onOpenEdit }: { onOpenEdit: () => void }) {
   // 今の生活日の、1日のスタートの時刻。undefined：読み込み中、null：1日のスタートがまだない（記録が0件）
   const [lifeDayStart, setLifeDayStart] = useState<Date | null | undefined>(undefined)
   // 「今日の流れ」の帯に出す記録（前の生活日の始まりから今まで。開始の早い順）
@@ -247,16 +249,17 @@ function Top() {
       </section>
 
       {/* ---------- 今日の流れ（1日のスタートがあるときだけ出す） ---------- */}
-      {lifeDayStart && <TodayFlow logs={flowLogs} dayStart={lifeDayStart} />}
+      {lifeDayStart && <TodayFlow logs={flowLogs} dayStart={lifeDayStart} onOpenEdit={onOpenEdit} />}
 
       {/* ---------- カテゴリボタン（2列。このエリアだけ縦にスクロールする） ---------- */}
       <div className={styles.buttonGrid}>
         {buttons.map((button) => (
-          <CategoryButtonView
+          <CategoryButton
             key={button.id}
-            button={button}
-            isRunning={current?.buttonId === button.id}
-            isPressing={pressingButtonId === button.id}
+            name={button.name}
+            color={button.color}
+            isActive={current?.buttonId === button.id}
+            isDimmed={pressingButtonId === button.id}
             disabled={pressingButtonId !== null}
             onPress={() => handleButtonPress(button)}
           />
@@ -302,48 +305,6 @@ function Top() {
         />
       )}
     </main>
-  )
-}
-
-// カテゴリボタン1つ分。実行中のボタンはカテゴリの色で塗りつぶし、文字を白にする（SCREENS.md「トップ」の4）
-// 記録している途中のボタンは薄くする。記録の通信中は、どのボタンも押せなくする
-function CategoryButtonView({
-  button,
-  isRunning,
-  isPressing,
-  disabled,
-  onPress,
-}: {
-  button: CategoryButton
-  isRunning: boolean // 実行中のボタンか
-  isPressing: boolean // 記録している途中のボタンか
-  disabled: boolean // 押せなくするか
-  onPress: () => void // 押したときに呼ぶ関数
-}) {
-  // 付けるクラス：いつも categoryButton。実行中なら running、記録している途中なら pressing も付ける
-  const classNames = [styles.categoryButton]
-  if (isRunning) {
-    classNames.push(styles.running)
-  }
-  if (isPressing) {
-    classNames.push(styles.pressing)
-  }
-
-  return (
-    <button
-      type="button"
-      className={classNames.join(' ')}
-      style={isRunning ? { background: button.color, borderColor: button.color } : undefined}
-      aria-pressed={isRunning}
-      disabled={disabled}
-      onClick={onPress}
-    >
-      <span
-        className={styles.chip}
-        style={{ background: isRunning ? 'var(--color-surface)' : button.color }}
-      />
-      {button.name}
-    </button>
   )
 }
 

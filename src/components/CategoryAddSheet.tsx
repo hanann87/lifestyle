@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SubmitEvent } from 'react'
+import type { CSSProperties, SubmitEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { CATEGORY_COLORS } from '../lib/categoryColors'
 import styles from './CategoryAddSheet.module.css'
@@ -28,6 +28,8 @@ function CategoryAddSheet({
 
   // 前後の空白（全角スペースも）を取り除いた名前。表示例と、追加するときに使う
   const trimmedName = name.trim()
+  // 表示例に出す名前（まだ何も入れていなければ「カテゴリ名」）
+  const previewName = trimmedName === '' ? 'カテゴリ名' : trimmedName
 
   // ---------- 「追加する」を押したとき：DB にカテゴリを追加する ----------
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -125,7 +127,10 @@ function CategoryAddSheet({
           <div className={styles.label}>表示例</div>
           <div className={styles.preview}>
             <span className={styles.previewChip} style={{ background: color }} />
-            {trimmedName === '' ? 'カテゴリ名' : trimmedName}
+            {/* 名前の文字数を CSS 変数で渡し、カテゴリボタンと同じく、入りきらないときだけ文字を小さくする */}
+            <span className={styles.previewName} style={{ '--name-length': previewName.length } as CSSProperties}>
+              {previewName}
+            </span>
           </div>
         </div>
 

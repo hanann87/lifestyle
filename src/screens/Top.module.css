@@ -110,45 +110,6 @@
   align-content: start;
 }
 
-/* カテゴリボタン：色チップと名前を横に並べる */
-.categoryButton {
-  height: 58px;
-  padding: 0 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: var(--color-surface);
-  font-size: 16px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* 実行中のボタン：文字を白にする（塗りつぶしの色は、カテゴリごとに Top.tsx で指定する） */
-.running {
-  color: var(--color-surface);
-}
-
-/* 記録の通信中：押せないボタンは、指の形のカーソルにしない */
-.categoryButton:disabled {
-  cursor: default;
-}
-
-/* 記録している途中のボタン：薄くして、押したことが伝わるようにする */
-.pressing {
-  opacity: 0.5;
-}
-
-/* ボタンの中の色チップ（色は Top.tsx で指定する） */
-.chip {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
 /* 「＋ 追加」ボタン：点線の枠 */
 .addButton {
   height: 58px;

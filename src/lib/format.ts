@@ -24,6 +24,18 @@ export function formatLifeDayLabel(date: Date): string {
   return `${pick('month')}月${pick('day')}日（${pick('weekday')}）`
 }
 
+// Date を、今日（日本時間）なら「10:40」、それ以外なら「9/27 23:10」の文字にする。修正画面の予告に使う
+export function formatTimeWithDate(date: Date, now: Date): string {
+  // 日本時間の「月/日」（例：9/27）
+  const toMonthDay = (d: Date) =>
+    d.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', timeZone: 'Asia/Tokyo' })
+  // 今日と同じ日付なら、時刻だけ
+  if (toMonthDay(date) === toMonthDay(now)) {
+    return formatTime(date)
+  }
+  return `${toMonthDay(date)} ${formatTime(date)}`
+}
+
 // ミリ秒の長さを「時:分:秒」（例：02:24:13）の文字にする。24時間を超えても、時をそのまま数える（例：26:00:00）
 export function formatDuration(milliseconds: number): string {
   // 端末の時計が DB の時計より少し遅れていると、マイナスになることがあるので、0 より小さければ 0 にする

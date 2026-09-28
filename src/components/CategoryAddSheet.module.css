@@ -111,6 +111,7 @@
 
 /* 表示例：トップ画面のカテゴリボタンと同じ見た目（幅は半分） */
 .preview {
+  container-type: inline-size; /* 中の名前から、この枠の中身の横幅を 100cqi として使う（CategoryButton.module.css と同じ） */
   width: 50%;
   height: 58px;
   padding: 0 16px;
@@ -129,6 +130,15 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
+}
+
+/* 表示例の名前：カテゴリボタンの名前と同じ計算で、入りきらないときだけ小さくする（CategoryButton.module.css の .name） */
+.previewName {
+  min-width: 0;
+  font-size: min(16px, calc((100cqi - 24px) / var(--name-length)));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* キャンセル・追加する：2つを同じ幅で横に並べる */
