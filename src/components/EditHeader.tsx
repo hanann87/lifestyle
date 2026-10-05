@@ -1,10 +1,10 @@
 import styles from './EditHeader.module.css'
 
-// 修正画面のどちらを出しているか。editOverwrite：記録の上書き、editDayStart：1日のスタート（App の画面の名前と同じ）
+// 修正画面のどちらを出しているか。editOverwrite：生活の記録、editDayStart：1日のスタート（App の画面の名前と同じ）
 export type EditTab = 'editOverwrite' | 'editDayStart'
 
 // 修正画面の上の部分（docs/mockups/Edit.dc.html・EditDayStart.dc.html）。2つの修正画面で共通
-// 「戻る」ボタン・見出し「修正」と、その下の「記録の上書き／1日のスタート」の切り替え
+// 「戻る」ボタン・見出し「修正」と、その下の「生活の記録／1日のスタート」の切り替え
 function EditHeader({
   activeTab,
   onBack,
@@ -36,9 +36,9 @@ function EditHeader({
         <h1 className={styles.title}>修正</h1>
       </header>
 
-      {/* ---------- 記録の上書き／1日のスタートの切り替え（選んでいる側は白地・太字） ---------- */}
+      {/* ---------- 生活の記録／1日のスタートの切り替え（選んでいる側は白地・太字） ---------- */}
       <nav className={styles.tabs} aria-label="修正の種類">
-        <TabButton label="記録の上書き" isActive={activeTab === 'editOverwrite'} onPress={() => onSelectTab('editOverwrite')} />
+        <TabButton label="生活の記録" isActive={activeTab === 'editOverwrite'} onPress={() => onSelectTab('editOverwrite')} />
         <TabButton label="1日のスタート" isActive={activeTab === 'editDayStart'} onPress={() => onSelectTab('editDayStart')} />
       </nav>
     </>

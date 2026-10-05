@@ -6,7 +6,7 @@ import Top from './screens/Top'
 import Edit from './screens/Edit'
 import EditDayStart from './screens/EditDayStart'
 
-// ログインしたあとに出せる画面の名前（editOverwrite：修正（記録の上書き）、editDayStart：修正（1日のスタート））
+// ログインしたあとに出せる画面の名前（editOverwrite：修正（生活の記録）、editDayStart：修正（1日のスタート））
 type Screen = 'top' | 'editOverwrite' | 'editDayStart'
 
 // アプリの画面の一番外側。ログインしているかどうかと、今の画面の名前で、表示する画面を切り替える

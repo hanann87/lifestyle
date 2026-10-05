@@ -29,7 +29,7 @@ type SelectedRange = {
 // 1分（ミリ秒）
 const ONE_MINUTE = 60 * 1000
 
-// 修正画面（記録の上書き）（SCREENS.md「修正（記録の上書き）」、docs/mockups/Edit.dc.html）
+// 修正画面（生活の記録）（SCREENS.md「修正（生活の記録）」、docs/mockups/Edit.dc.html）
 // カテゴリ・開始・終了を選び、置き換わる記録を確かめて、「この時間帯を上書きする」で DB 関数 overwrite_activity を呼ぶ
 // onBack：トップ画面に戻る関数（App がトップ画面に切り替える）。左上の「戻る」と、上書きできたときに呼ぶ
 // onSelectTab：上の切り替えを押したときに呼ぶ関数（App が「1日のスタート」の画面に切り替える）
@@ -222,7 +222,7 @@ function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: 
 
   return (
     <main className={styles.screen}>
-      {/* ---------- 戻る・見出し・「記録の上書き／1日のスタート」の切り替え ---------- */}
+      {/* ---------- 戻る・見出し・「生活の記録／1日のスタート」の切り替え ---------- */}
       <EditHeader activeTab="editOverwrite" onBack={onBack} onSelectTab={onSelectTab} />
 
       {/* ---------- 入力する部分（はみ出す分は、ここだけ縦にスクロールする） ---------- */}

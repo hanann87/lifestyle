@@ -12,7 +12,7 @@ import styles from './EditDayStart.module.css'
 // 修正画面（1日のスタート）（SCREENS.md「修正（1日のスタート）」、docs/mockups/EditDayStart.dc.html）
 // 新しいほうから3つ目の1日のスタートから今までの記録を時刻の順に並べ、記録と記録の間（境目）と、1日のスタートを出す
 // 境目の「ここをスタートに」で追加、青い枠の「削除」で削除、「移動」→ 境目の「ここへ移動」で移動する
-// onBack：トップ画面に戻る関数、onSelectTab：上の切り替えを押したときに呼ぶ関数（App が「記録の上書き」の画面に切り替える）
+// onBack：トップ画面に戻る関数、onSelectTab：上の切り替えを押したときに呼ぶ関数（App が「生活の記録」の画面に切り替える）
 function EditDayStart({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: EditTab) => void }) {
   // 並べる記録（古い順）。null なら読み込み中
   const [logs, setLogs] = useState<DayStartLog[] | null>(null)
@@ -152,7 +152,7 @@ function EditDayStart({ onBack, onSelectTab }: { onBack: () => void; onSelectTab
 
   return (
     <main className={styles.screen}>
-      {/* ---------- 戻る・見出し・「記録の上書き／1日のスタート」の切り替え ---------- */}
+      {/* ---------- 戻る・見出し・「生活の記録／1日のスタート」の切り替え ---------- */}
       <EditHeader activeTab="editDayStart" onBack={onBack} onSelectTab={onSelectTab} />
 
       <p className={styles.description}>
