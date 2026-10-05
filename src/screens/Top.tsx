@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { supabase } from '../lib/supabase'
 import { parseTimeRange, parseTimestamp } from '../lib/timeRange'
 import { formatDuration, formatLifeDayLabel, formatTime } from '../lib/format'
@@ -240,7 +241,10 @@ function Top({ onOpenEdit }: { onOpenEdit: () => void }) {
               いま記録中
             </div>
             <div className={styles.row}>
-              <div className={styles.name}>{current.name}</div>
+              {/* 名前の文字数を、CSS 変数 --name-length として渡す（文字の大きさの計算に使う。計算は Top.module.css の .name） */}
+              <div className={styles.name} style={{ '--name-length': current.name.length } as CSSProperties}>
+                {current.name}
+              </div>
               <div className={styles.since}>{formatTime(current.start)}から</div>
             </div>
             <Timer start={current.start} />

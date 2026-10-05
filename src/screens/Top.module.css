@@ -58,21 +58,35 @@
   border-radius: 50%;
 }
 
-/* カテゴリ名と開始時刻の行：左右の端に分け、文字の下の線をそろえる */
+/* カテゴリ名と開始時刻の行：左右の端に分け、文字の下の線をそろえる
+   container-type: inline-size で、中の要素から「この行の横幅」を 100cqi として使えるようにする */
 .row {
+  container-type: inline-size;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 8px;
 }
 
+/* カテゴリ名：ふだんは 28px。「○:○○から」と1行に並ばないときだけ小さくする
+   名前を置ける幅 ＝ 行の横幅（100cqi）−「○:○○から」の幅（約76px）− すき間（8px）
+   日本語は1文字の幅がほぼ文字の大きさと同じなので、「置ける幅 ÷ 文字数」が、入りきる一番大きい文字の大きさ
+   min(28px, …) で、28px より大きくはしない。万一それでも入らないときは「…」で省略する */
 .name {
-  font-size: 28px;
+  min-width: 0;
+  font-size: min(28px, calc((100cqi - 84px) / var(--name-length)));
   font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
+/* 「○:○○から」：名前が長くても縮めず、折り返さない */
 .since {
+  flex-shrink: 0;
   font-size: 13px;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* 経過時間のタイマー：数字は等幅のフォント（1秒ごとに数字が変わっても、幅が変わらず横にずれない） */
