@@ -16,7 +16,7 @@ const TIME_LABEL_GAP_PX = 4
 // 今までの部分に色が付く。帯の上に6時間ごとの目盛り、帯の下に切り替わった時刻を2段で出す
 // onOpenEdit：見出しの右の「修正」を押したときに呼ぶ関数（修正画面に切り替える）
 function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: Date; onOpenEdit: () => void }) {
-  // 今の時刻（1秒ごとに新しくなる）。色の付いた部分の右端と「今 ○:○○」の文字が、時間がたつと右へ進む
+  // 今の時刻（1秒ごとに新しくなる）。色の付いた部分の右端と今の時刻の文字が、時間がたつと右へ進む
   const now = useNow()
   const flow = buildFlow(logs, dayStart, now)
 
@@ -41,9 +41,9 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
   }, [])
 
   // ---------- 帯の下に出す時刻の文字と、その置き場所 ----------
-  // 今の時刻には「今 」を付ける。1日のスタートと今は、必ず出す
+  // 昨夜の睡眠の始まり・1日のスタート・今は、必ず出す（太字にする）
   const timeLabels = flow.times.map((flowTime) => {
-    const text = flowTime.kind === 'now' ? `今 ${formatTime(flowTime.time)}` : formatTime(flowTime.time)
+    const text = formatTime(flowTime.time)
     return {
       text,
       percent: flowTime.percent,
@@ -78,7 +78,7 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
         </button>
       </div>
 
-      {/* ---------- 帯の上：6時間ごとの目盛りの数字（0・6・12・18） ---------- */}
+      {/* ---------- 帯の上：6時間ごとの目盛りの数字（0・6・12・18・24・30…） ---------- */}
       <div className={styles.ticks} aria-hidden="true">
         {flow.ticks.map((tick) => (
           <span key={tick.percent} className={styles.tickLabel} style={{ left: `${tick.percent}%` }}>
@@ -133,7 +133,7 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
 }
 
 // 文字の幅（px）を見積もる。時刻の文字は等幅のフォント（IBM Plex Mono）で出していて、
-// 半角の文字（数字・「:」・空白）は文字の大きさの 0.6 倍、全角の文字（「今」）は文字の大きさと同じ幅になる
+// 半角の文字（数字・「:」）は文字の大きさの 0.6 倍、全角の文字（日本語）は文字の大きさと同じ幅になる
 function estimateTextWidthPx(text: string): number {
   let widthPx = 0
   for (const character of text) {

@@ -76,14 +76,14 @@
   bottom: 0;
 }
 
-/* 6時間ごとの目盛りの線（位置は TodayFlow.tsx で指定する）：帯の上に重ねる、半分透ける白い線 */
+/* 6時間ごとの目盛りの線（位置は TodayFlow.tsx で指定する）：帯の上に重ねる、細い白い点線
+   幅 0 の要素の左の枠線を点線にして、縦の点線を描く */
 .tickLine {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 1px;
-  background: var(--color-surface);
-  opacity: 0.6;
+  width: 0;
+  border-left: 1px dotted var(--color-surface);
 }
 
 /* 1日のスタートの縦線：帯より上下に少しはみ出す */
@@ -112,7 +112,7 @@
   white-space: nowrap;
 }
 
-/* 必ず出す時刻（1日のスタートと今）：濃い色の太字 */
+/* 必ず出す時刻（昨夜の睡眠の始まり・1日のスタート・今）：濃い色の太字 */
 .required {
   color: var(--color-text);
   font-weight: 600;

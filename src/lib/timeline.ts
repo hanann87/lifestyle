@@ -23,17 +23,18 @@ export type FlowSegment = {
   color: string
 }
 
-// 6時間ごとの目盛り1つ分（時計の 0時・6時・12時・18時）
+// 6時間ごとの目盛り1つ分（時計の 0時・6時・12時・18時の位置）
 export type FlowTick = {
   percent: number // 帯の中の位置（%）
-  hour: number // 何時か（0・6・12・18）
+  hour: number // 目盛りに書く数。1日のスタートの日の 0時から数えるので、次の日は 24・30… と続く
 }
 
 // 帯の下に時刻を出す場所1つ分
 export type FlowTime = {
   time: Date
   percent: number // 帯の中の位置（%）
-  kind: 'switch' | 'dayStart' | 'now' // switch：行動が切り替わった時刻、dayStart：1日のスタート、now：今
+  // switch：行動が切り替わった時刻、lastNightStart：昨夜の睡眠の始まり、dayStart：1日のスタート、now：今
+  kind: 'switch' | 'lastNightStart' | 'dayStart' | 'now'
 }
 
 // 帯を描くのに必要なもの全部
@@ -80,12 +81,17 @@ export function buildFlow(logs: FlowLog[], dayStart: Date, now: Date): Flow {
     switchTimes.sort((a, b) => a.getTime() - b.getTime())
   }
 
-  // 時刻を出す場所：切り替わった時刻（1日のスタートと同じ時刻のものは dayStart）と、最後に今
-  const times: FlowTime[] = switchTimes.map((time) => ({
-    time,
-    percent: toPercent(time),
-    kind: time.getTime() === dayStart.getTime() ? 'dayStart' : 'switch',
-  }))
+  // 時刻を出す場所：切り替わった時刻と、最後に今
+  // 切り替わった時刻のうち、1日のスタートと同じ時刻のものは dayStart、昨夜の睡眠の始まりと同じ時刻のものは lastNightStart
+  const times: FlowTime[] = switchTimes.map((time) => {
+    let kind: FlowTime['kind'] = 'switch'
+    if (time.getTime() === dayStart.getTime()) {
+      kind = 'dayStart'
+    } else if (time.getTime() === lastNightStart?.getTime()) {
+      kind = 'lastNightStart'
+    }
+    return { time, percent: toPercent(time), kind }
+  })
   times.push({ time: now, percent: toPercent(now), kind: 'now' })
 
   return {
@@ -94,7 +100,7 @@ export function buildFlow(logs: FlowLog[], dayStart: Date, now: Date): Flow {
     dayStartPercent: toPercent(dayStart),
     nowPercent: toPercent(now),
     segments,
-    ticks: buildTicks(axisStart, axisEnd, toPercent),
+    ticks: buildTicks(axisStart, axisEnd, dayStart, toPercent),
     times,
   }
 }
@@ -125,10 +131,19 @@ export function findLastNightStart(previousDayLogs: FlowLog[]): Date | null {
 
 // ---------- 6時間ごとの目盛りを求める ----------
 // 帯の左端より後・右端より前にある、日本時間の 0時・6時・12時・18時を、左から順に返す
-function buildTicks(axisStart: Date, axisEnd: Date, toPercent: (time: Date) => number): FlowTick[] {
+// 目盛りに書く数は、1日のスタートの日の 0時から何時間かにする（次の日の 0時は 24、6時は 30。2026-10-14 に本人と決めた）
+function buildTicks(
+  axisStart: Date,
+  axisEnd: Date,
+  dayStart: Date,
+  toPercent: (time: Date) => number,
+): FlowTick[] {
   // Date の中身は「1970年1月1日 0時（UTC）から何ミリ秒か」の数。9時間ぶん足すと、日本時間の 0時からの数になる。
   // それを6時間で割った商が「6時間のくぎりの何番目か」なので、左端のくぎりの次（+ 1）から始める
   const firstTickIndex = Math.floor((axisStart.getTime() + JST_OFFSET_MS) / TICK_INTERVAL_MS) + 1
+
+  // 1日のスタートの日の 0時（日本時間の 0時からの数）。24時間で割った商に24時間を掛けると、その日の 0時になる
+  const baseMidnightJstMs = Math.floor((dayStart.getTime() + JST_OFFSET_MS) / DAY_MS) * DAY_MS
 
   const ticks: FlowTick[] = []
   for (let tickIndex = firstTickIndex; ; tickIndex += 1) {
@@ -137,7 +152,9 @@ function buildTicks(axisStart: Date, axisEnd: Date, toPercent: (time: Date) => n
     if (time >= axisEnd) {
       break
     }
-    ticks.push({ percent: toPercent(time), hour: (jstMs / HOUR_MS) % 24 })
+    // 1日のスタートの日の 0時から何時間か。前の日の目盛り（昨夜の 18時など）はマイナスになるので、24 を足して時計の時刻にする
+    const hoursFromBase = (jstMs - baseMidnightJstMs) / HOUR_MS
+    ticks.push({ percent: toPercent(time), hour: hoursFromBase < 0 ? hoursFromBase + 24 : hoursFromBase })
   }
   return ticks
 }
