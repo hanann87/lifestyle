@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { supabase } from '../lib/supabase'
-import { parseTimeRange, parseTimestamp } from '../lib/timeRange'
+import { parseTimeRange } from '../lib/timeRange'
 import { formatDuration, formatLifeDayLabel, formatTime } from '../lib/format'
 import { useNow } from '../lib/useNow'
+import { loadLifeDayFlow } from '../lib/lifeDay'
 import type { FlowLog } from '../lib/timeline'
 import CategoryAddSheet from '../components/CategoryAddSheet'
 import CategoryButton from '../components/CategoryButton'
@@ -79,54 +80,16 @@ function Top({ onOpenEdit }: { onOpenEdit: () => void }) {
     })
   }
 
-  // ---------- DB から、今の生活日（1日のスタートと、帯に出す記録）を読む ----------
+  // ---------- DB から、今の生活日（1日のスタートと、帯に出す記録）を読み、状態に入れる ----------
+  // 読む処理そのものは lib/lifeDay.ts の loadLifeDayFlow（修正画面でも同じものを読むので、そちらに置いてある）
   async function loadLifeDay() {
-    // 自分の1日のスタートを、新しい順に2件読む（1件目：今の生活日の始まり、2件目：前の生活日の始まり）
-    const { data: dayStarts, error: dayStartsError } = await supabase
-      .from('day_starts')
-      .select('started_at')
-      .order('started_at', { ascending: false })
-      .limit(2)
-
-    if (dayStartsError) {
+    const lifeDayFlow = await loadLifeDayFlow()
+    if (lifeDayFlow === null) {
       setErrorMessage('読み込めませんでした。電波の良い場所で再度お試しください')
       return
     }
-    if (dayStarts.length === 0) {
-      // 1日のスタートがまだない（記録が0件）
-      setLifeDayStart(null)
-      setFlowLogs([])
-      return
-    }
-
-    const currentDayStart = parseTimestamp(dayStarts[0].started_at)
-    // 帯には昨夜の睡眠も出すので、前の生活日の始まりから読む（前の生活日がなければ、今の生活日の始まりから）
-    const readFrom = dayStarts.length === 2 ? parseTimestamp(dayStarts[1].started_at) : currentDayStart
-
-    // その時刻より後にかかる記録を、開始の早い順に読む。overlaps：範囲 [readFrom, ) と重なる記録だけ
-    const { data: logs, error: logsError } = await supabase
-      .from('activity_logs')
-      .select('period, buttons(color, is_sleep)')
-      .overlaps('period', `[${readFrom.toISOString()},)`)
-      .order('period')
-
-    if (logsError) {
-      setErrorMessage('読み込めませんでした。電波の良い場所で再度お試しください')
-      return
-    }
-
-    setLifeDayStart(currentDayStart)
-    setFlowLogs(
-      logs.map((log) => {
-        const range = parseTimeRange(log.period as string)
-        return {
-          start: range.start,
-          end: range.end,
-          color: log.buttons.color,
-          isSleep: log.buttons.is_sleep,
-        }
-      }),
-    )
+    setLifeDayStart(lifeDayFlow.dayStart)
+    setFlowLogs(lifeDayFlow.logs)
   }
 
   // ---------- DB から、カテゴリボタンの一覧を読む ----------
