@@ -5,9 +5,12 @@ import { fromDateTimeInputValue, toDateTimeInputValue } from '../lib/dateTimeInp
 import { formatTimeSpan, formatTimeWithDate } from '../lib/format'
 import { buildOverwritePreview, snapToLogBoundary } from '../lib/overwritePreview'
 import type { PreviewLog, TimeSpan } from '../lib/overwritePreview'
+import { loadLifeDayFlow } from '../lib/lifeDay'
+import type { FlowLog } from '../lib/timeline'
 import CategoryButton from '../components/CategoryButton'
 import EditHeader from '../components/EditHeader'
 import type { EditTab } from '../components/EditHeader'
+import TodayFlow from '../components/TodayFlow'
 import styles from './Edit.module.css'
 
 // カテゴリ1つ分（選ぶボタンに出すもの）
@@ -46,6 +49,10 @@ function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: 
   const [endValue, setEndValue] = useState('')
   // 予告の計算に使う、選んだ時間帯のまわりの記録。null なら、時間帯を選べていない（予告を出さない）
   const [previewLogs, setPreviewLogs] = useState<PreviewLog[] | null>(null)
+  // 今の生活日の、1日のスタートの時刻（「今日の流れ」の帯に使う）。null：読み込み中か、1日のスタートがまだない（帯を出さない）
+  const [lifeDayStart, setLifeDayStart] = useState<Date | null>(null)
+  // 「今日の流れ」の帯に出す記録（前の生活日の始まりから今まで。開始の早い順）
+  const [flowLogs, setFlowLogs] = useState<FlowLog[]>([])
   // 上書きの通信中か（通信中はボタンを押せなくする）
   const [sending, setSending] = useState(false)
   // 失敗したときのメッセージ（空なら何も出さない）
@@ -87,6 +94,17 @@ function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: 
     }
   }
 
+  // ---------- DB から、今の生活日（1日のスタートと、帯に出す記録）を読み、状態に入れる（トップ画面と同じ） ----------
+  async function loadLifeDay() {
+    const lifeDayFlow = await loadLifeDayFlow()
+    if (lifeDayFlow === null) {
+      setErrorMessage('読み込めませんでした。電波の良い場所で再度お試しください')
+      return
+    }
+    setLifeDayStart(lifeDayFlow.dayStart)
+    setFlowLogs(lifeDayFlow.logs)
+  }
+
   // ---------- 終了の選び方を変えたとき：「過去の時刻」に初めて切り替えたら、終了に今の時刻を入れておく ----------
   function handleEndKindChange(kind: EndKind) {
     setEndKind(kind)
@@ -95,11 +113,11 @@ function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: 
     }
   }
 
-  // ---------- 画面に出たときに、カテゴリの一覧と、いま記録中の行動の開始時刻を読む ----------
+  // ---------- 画面に出たときに、カテゴリの一覧・いま記録中の行動の開始時刻・今の生活日を読む ----------
   useEffect(() => {
-    // 2つの読み込みを同時に始めて、両方が終わるまで待つ
+    // 3つの読み込みを同時に始めて、全部が終わるまで待つ
     async function loadEditScreenData() {
-      await Promise.all([loadCategories(), loadRunningStart()])
+      await Promise.all([loadCategories(), loadRunningStart(), loadLifeDay()])
     }
     loadEditScreenData()
   }, [])
@@ -224,6 +242,9 @@ function Edit({ onBack, onSelectTab }: { onBack: () => void; onSelectTab: (tab: 
     <main className={styles.screen}>
       {/* ---------- 戻る・見出し・「生活の記録／1日のスタート」の切り替え ---------- */}
       <EditHeader activeTab="editOverwrite" onBack={onBack} onSelectTab={onSelectTab} />
+
+      {/* ---------- 今日の流れ（1日のスタートがあるときだけ出す。スクロールしても見えるように、入力する部分の外に置く） ---------- */}
+      {lifeDayStart && <TodayFlow logs={flowLogs} dayStart={lifeDayStart} />}
 
       {/* ---------- 入力する部分（はみ出す分は、ここだけ縦にスクロールする） ---------- */}
       <div className={styles.body}>

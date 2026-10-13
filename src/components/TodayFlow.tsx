@@ -16,8 +16,16 @@ const TIME_MARK_AREA_HEIGHT_PX = 8
 // 「今日の流れ」の帯（SCREENS.md「トップ」の3）。
 // 今の生活日の行動を、色分けした横向きの帯で出す。帯の全体は「昨夜の睡眠の始まり〜1日のスタートの24時間後」で、
 // 今までの部分に色が付く。帯の上に6時間ごとの目盛り、帯の下に境目の印と、切り替わった時刻を2段で出す
-// onOpenEdit：見出しの右の「修正」を押したときに呼ぶ関数（修正画面に切り替える）
-function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: Date; onOpenEdit: () => void }) {
+// トップ画面と、修正画面（生活の記録）で使う
+function TodayFlow({
+  logs,
+  dayStart,
+  onOpenEdit,
+}: {
+  logs: FlowLog[] // 帯に出す記録（前の生活日の始まりから今まで。開始の早い順）
+  dayStart: Date // 今の生活日の、1日のスタート
+  onOpenEdit?: () => void // 見出しの右の「修正」を押したときに呼ぶ関数（修正画面に切り替える）。省略したら「修正」ボタンを出さない
+}) {
   // 今の時刻（1秒ごとに新しくなる）。色の付いた部分の右端と今の時刻の文字が、時間がたつと右へ進む
   const now = useNow()
   const flow = buildFlow(logs, dayStart, now)
@@ -60,26 +68,28 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
 
   return (
     <section className={styles.flow} aria-label="今日の流れ">
-      {/* ---------- 見出しと「修正」ボタン（左右の端に置く） ---------- */}
+      {/* ---------- 見出しと「修正」ボタン（左右の端に置く。ボタンは、onOpenEdit を受け取ったときだけ出す） ---------- */}
       <div className={styles.titleRow}>
         <h2 className={styles.title}>今日の流れ</h2>
-        <button type="button" className={styles.editButton} onClick={onOpenEdit}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-          </svg>
-          修正
-        </button>
+        {onOpenEdit && (
+          <button type="button" className={styles.editButton} onClick={onOpenEdit}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            修正
+          </button>
+        )}
       </div>
 
       {/* ---------- 帯の上：6時間ごとの目盛りの数字（0・6・12・18・24・30…） ---------- */}
