@@ -37,11 +37,21 @@
   cursor: pointer;
 }
 
-/* 「昨夜の睡眠」の文字（幅は TodayFlow.tsx で、1日のスタートの位置までにする） */
-.lastNightCaption {
-  font-size: 11px;
+/* 帯の上の目盛りの数字の行：中の数字を、この行を基準に置く */
+.ticks {
+  position: relative;
+  height: 12px;
+  font-family: var(--font-number);
+  font-size: 10px;
+  line-height: 12px;
   color: var(--color-text-muted);
-  text-align: center;
+}
+
+/* 目盛りの数字（位置は TodayFlow.tsx で指定する）：目盛りの位置を中心に置く */
+.tickLabel {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
 }
 
 /* 帯と縦線の入れ物：中の要素を、この入れ物を基準に置く */
@@ -66,9 +76,14 @@
   bottom: 0;
 }
 
-/* 昨夜の睡眠の部分：薄くする（SCREENS.md「不透明度40%」） */
-.lastNight {
-  opacity: 0.4;
+/* 6時間ごとの目盛りの線（位置は TodayFlow.tsx で指定する）：帯の上に重ねる、半分透ける白い線 */
+.tickLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-surface);
+  opacity: 0.6;
 }
 
 /* 1日のスタートの縦線：帯より上下に少しはみ出す */
@@ -80,46 +95,25 @@
   background: var(--color-text);
 }
 
-/* 帯の下の時刻の行：中の文字を、この行を基準に置く */
-.labels {
+/* 帯の下の時刻の行（2段ぶんの高さ）：中の文字を、この行を基準に置く
+   文字の大きさ・1段の高さは、TodayFlow.tsx の TIME_FONT_SIZE_PX・TIME_ROW_HEIGHT_PX と同じ値にしておく */
+.times {
   position: relative;
   height: 32px;
+  font-family: var(--font-number);
   font-size: 11px;
+  line-height: 16px;
   color: var(--color-text-muted);
 }
 
-.rangeStartLabel {
+/* 時刻の文字（左端の位置と段は TodayFlow.tsx で指定する） */
+.timeLabel {
   position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* 1日のスタートの時刻：縦線の位置を中心に置く */
-.dayStartLabel {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   white-space: nowrap;
 }
 
-/* 昨夜の睡眠がないとき（1日のスタートが帯の左端）：中心に置くと左にはみ出すので、左端にそろえる */
-.atLeftEdge {
-  transform: none;
-  align-items: flex-start;
-}
-
-.nowLabel {
-  position: absolute;
-  top: 0;
-  right: 0;
+/* 必ず出す時刻（1日のスタートと今）：濃い色の太字 */
+.required {
   color: var(--color-text);
-  font-weight: 700;
-}
-
-.strong {
-  color: var(--color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
