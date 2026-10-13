@@ -86,11 +86,12 @@
   border-left: 1px dotted var(--color-surface);
 }
 
-/* 1日のスタートの縦線：帯より上下に少しはみ出す */
+/* 1日のスタートの縦線：帯より上に 6px、下に 10px はみ出す
+   下は、境目の印（.markLine）の下の端と同じ高さまでのばし、1日のスタートの印を兼ねる（印の線を重ねると、少しずれて見えるため） */
 .dayStartLine {
   position: absolute;
   top: -6px;
-  bottom: -6px;
+  bottom: -10px;
   width: 2px;
   background: var(--color-text);
 }

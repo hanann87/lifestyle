@@ -51,6 +51,8 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
       percent: flowTime.percent,
       widthPx: estimateTextWidthPx(text),
       isRequired: flowTime.kind !== 'switch',
+      // 1日のスタートには、印を出さない（帯の黒い縦線を下までのばして、印の代わりにする。2本の線を重ねると、少しずれて見えるため）
+      hasMark: flowTime.kind !== 'dayStart',
     }
   })
   // 置き場所（timeLabels と同じ並び。置けなかったものは null）
@@ -116,14 +118,17 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
       <div className={styles.times}>
         {/* 境目の印：時刻を出した境目には短い縦線、出せなかった境目には小さい点（帯の幅を測り終わってから出す） */}
         {barWidthPx > 0 &&
-          timeLabels.map((label, index) => (
-            <span
-              key={`mark-${index}`}
-              className={timeLabelPlaces[index] ? styles.markLine : styles.markDot}
-              style={{ left: `${label.percent}%` }}
-              aria-hidden="true"
-            />
-          ))}
+          timeLabels.map(
+            (label, index) =>
+              label.hasMark && (
+                <span
+                  key={`mark-${index}`}
+                  className={timeLabelPlaces[index] ? styles.markLine : styles.markDot}
+                  style={{ left: `${label.percent}%` }}
+                  aria-hidden="true"
+                />
+              ),
+          )}
         {timeLabels.map((label, index) => {
           const place = timeLabelPlaces[index]
           if (!place) {
