@@ -10,10 +10,12 @@ import styles from './TodayFlow.module.css'
 const TIME_FONT_SIZE_PX = 11
 const TIME_ROW_HEIGHT_PX = 16
 const TIME_LABEL_GAP_PX = 4
+// 時刻の文字の上に空けておく、境目の印（縦線・点）のための高さ（px）
+const TIME_MARK_AREA_HEIGHT_PX = 8
 
 // 「今日の流れ」の帯（SCREENS.md「トップ」の3）。
 // 今の生活日の行動を、色分けした横向きの帯で出す。帯の全体は「昨夜の睡眠の始まり〜1日のスタートの24時間後」で、
-// 今までの部分に色が付く。帯の上に6時間ごとの目盛り、帯の下に切り替わった時刻を2段で出す
+// 今までの部分に色が付く。帯の上に6時間ごとの目盛り、帯の下に境目の印と、切り替わった時刻を2段で出す
 // onOpenEdit：見出しの右の「修正」を押したときに呼ぶ関数（修正画面に切り替える）
 function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: Date; onOpenEdit: () => void }) {
   // 今の時刻（1秒ごとに新しくなる）。色の付いた部分の右端と今の時刻の文字が、時間がたつと右へ進む
@@ -110,8 +112,18 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
         <div className={styles.dayStartLine} style={{ left: `${flow.dayStartPercent}%` }} />
       </div>
 
-      {/* ---------- 帯の下：切り替わった時刻（2段。置けなかったものは出さない） ---------- */}
+      {/* ---------- 帯の下：境目の印と、切り替わった時刻（2段。置けなかったものは出さない） ---------- */}
       <div className={styles.times}>
+        {/* 境目の印：時刻を出した境目には短い縦線、出せなかった境目には小さい点（帯の幅を測り終わってから出す） */}
+        {barWidthPx > 0 &&
+          timeLabels.map((label, index) => (
+            <span
+              key={`mark-${index}`}
+              className={timeLabelPlaces[index] ? styles.markLine : styles.markDot}
+              style={{ left: `${label.percent}%` }}
+              aria-hidden="true"
+            />
+          ))}
         {timeLabels.map((label, index) => {
           const place = timeLabelPlaces[index]
           if (!place) {
@@ -121,7 +133,7 @@ function TodayFlow({ logs, dayStart, onOpenEdit }: { logs: FlowLog[]; dayStart: 
             <span
               key={index}
               className={label.isRequired ? `${styles.timeLabel} ${styles.required}` : styles.timeLabel}
-              style={{ left: place.leftPx, top: place.row * TIME_ROW_HEIGHT_PX }}
+              style={{ left: place.leftPx, top: TIME_MARK_AREA_HEIGHT_PX + place.row * TIME_ROW_HEIGHT_PX }}
             >
               {label.text}
             </span>

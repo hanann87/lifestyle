@@ -95,15 +95,38 @@
   background: var(--color-text);
 }
 
-/* 帯の下の時刻の行（2段ぶんの高さ）：中の文字を、この行を基準に置く
-   文字の大きさ・1段の高さは、TodayFlow.tsx の TIME_FONT_SIZE_PX・TIME_ROW_HEIGHT_PX と同じ値にしておく */
+/* 帯の下の、境目の印と時刻の行：中の印と文字を、この行を基準に置く
+   高さは、印のための 8px ＋ 時刻2段ぶんの 32px。帯のすぐ下に印が来るように、上のすき間を 4px 詰める
+   文字の大きさ・1段の高さ・印のための高さは、TodayFlow.tsx の TIME_FONT_SIZE_PX・TIME_ROW_HEIGHT_PX・TIME_MARK_AREA_HEIGHT_PX と同じ値にしておく */
 .times {
   position: relative;
-  height: 32px;
+  height: 40px;
+  margin-top: -4px;
   font-family: var(--font-number);
   font-size: 11px;
   line-height: 16px;
   color: var(--color-text-muted);
+}
+
+/* 時刻を出した境目の印：短い縦線（位置は TodayFlow.tsx で指定する。境目の位置を中心に置く） */
+.markLine {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 6px;
+  background: var(--color-text-muted);
+  transform: translateX(-50%);
+}
+
+/* 時刻を出せなかった境目の印：小さい点 */
+.markDot {
+  position: absolute;
+  top: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  transform: translateX(-50%);
 }
 
 /* 時刻の文字（左端の位置と段は TodayFlow.tsx で指定する） */
